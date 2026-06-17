@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Photo Album ✦</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff8f0;
+    --coral: #ff6b6b;
+    --yellow: #ffd93d;
+    --mint: #6bcb77;
+    --sky: #4d96ff;
+    --lavender: #c77dff;
+    --dark: #1a1a2e;
+    --pink: #ff9de2;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--cream); font-family:'DM Sans',sans-serif; color:var(--dark); overflow-x:hidden; cursor:none; }
+
+  .cursor { width:20px;height:20px;border-radius:50%;background:var(--coral);position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:multiply; }
+  .cursor-dot { width:6px;height:6px;border-radius:50%;background:var(--dark);position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%); }
+
+  /* ══ ホーム ══ */
+  #home-screen { min-height:100vh; transition:opacity .4s,transform .4s; }
+  #home-screen.hidden { opacity:0;transform:scale(.97);pointer-events:none;position:fixed;inset:0;overflow:hidden; }
+
+  /* ── ヘッダー ── */
+  .top-bar {
+    padding:44px 56px 0;
+    display:flex; align-items:center; justify-content:space-between;
+    position:relative; z-index:2;
+  }
+  .logo { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; letter-spacing:-1px; }
+  .logo span { color:var(--coral); font-style:italic; }
+
+  .add-btn {
+    display:flex; align-items:center; gap:8px;
+    background:var(--dark); color:white; border:none; border-radius:100px;
+    padding:12px 22px; font-size:.82rem; letter-spacing:1.5px; text-transform:uppercase;
+    cursor:pointer; transition:background .2s, transform .15s; font-family:'DM Sans',sans-serif;
+  }
+  .add-btn:hover { background:#2e2e4a; transform:scale(1.03); }
+
+  /* ── ヒーロー ── */
+  .hero {
+    padding:36px 56px 20px;
+    position:relative; overflow:hidden; min-height:240px;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .hero-title {
+    font-family:'Playfair Display',serif;
+    font-size:clamp(3rem,7vw,6.5rem); line-height:1.0; font-weight:700;
+    max-width:700px; position:relative; z-index:1;
+  }
+  .hero-title .line2 { font-style:italic; color:var(--coral); padding-left:60px; display:block; }
+  .hero-sub {
+    margin-top:18px; font-size:.85rem; color:#aaa;
+    letter-spacing:3px; text-transform:uppercase;
+    position:relative; z-index:1;
+  }
+
+  /* blobたち */
+  .blob {
+    position:absolute; border-radius:60% 40% 70% 30%/50% 60% 40% 50%;
+    opacity:.45; pointer-events:none;
+  }
+  .blob-1 { width:320px;height:320px; background:var(--yellow); right:-40px; top:-40px; animation:blob1 9s ease-in-out infinite; }
+  .blob-2 { width:180px;height:180px; background:var(--pink);   right:200px; top:60px; animation:blob2 7s ease-in-out infinite; opacity:.3; }
+  .blob-3 { width:120px;height:120px; background:var(--mint);   right:80px; bottom:-20px; animation:blob1 11s ease-in-out infinite reverse; opacity:.25; }
+  @keyframes blob1 {
+    0%,100%{border-radius:60% 40% 70% 30%/50% 60% 40% 50%;}
+    33%{border-radius:40% 60% 30% 70%/60% 40% 50% 50%;}
+    66%{border-radius:70% 30% 50% 50%/40% 70% 30% 60%;}
+  }
+  @keyframes blob2 {
+    0%,100%{border-radius:50% 50% 60% 40%/40% 60% 50% 50%;}
+    50%{border-radius:30% 70% 40% 60%/60% 40% 70% 30%;}
+  }
+
+  /* ── ティッカー ── */
+  .ticker-wrap { overflow:hidden; background:var(--dark); padding:13px 0; margin:28px 0 0; }
+  .ticker { display:flex; gap:56px; white-space:nowrap; animation:ticker 22s linear infinite; }
+  .ticker span { font-size:.78rem; letter-spacing:3px; text-transform:uppercase; color:var(--yellow); display:flex; align-items:center; gap:14px; }
+  .ticker span::after { content:'✦'; color:var(--coral); }
+  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* ── 月ナビ ── */
+  .month-nav {
+    display:flex; align-items:center; justify-content:center; gap:20px;
+    padding:32px 56px 20px;
+  }
+  .month-label {
+    font-family:'Playfair Display',serif;
+    font-size:1.9rem; font-weight:700; letter-spacing:-1px;
+    min-width:200px; text-align:center;
+  }
+  .month-label span { color:var(--coral); font-style:italic; }
+  .nav-arrow {
+    background:none; border:2px solid var(--dark); border-radius:50%;
+    width:40px; height:40px; font-size:1rem;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:background .2s, color .2s, transform .15s; color:var(--dark);
+  }
+  .nav-arrow:hover { background:var(--dark); color:white; transform:scale(1.1); }
+
+  /* ── カレンダー ── */
+  .weekday-row {
+    display:grid; grid-template-columns:repeat(7,1fr);
+    padding:0 56px; gap:6px; margin-bottom:8px;
+  }
+  .weekday-cell { text-align:center; font-size:.62rem; letter-spacing:2px; text-transform:uppercase; color:#c0b0a8; padding:4px 0; }
+  .weekday-cell:first-child { color:#ffaaaa; }
+  .weekday-cell:last-child  { color:#aaaaee; }
+
+  .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); padding:0 56px 60px; gap:6px; }
+
+  .day-cell {
+    aspect-ratio:1/1; border-radius:14px;
+    position:relative; overflow:hidden;
+    background:#f0e8df;
+    transition:transform .22s, box-shadow .22s;
+  }
+  .day-cell.empty { background:transparent; }
+  .day-cell.has-photo { cursor:pointer; }
+  .day-cell.has-photo:hover { transform:scale(1.05); box-shadow:0 14px 40px rgba(0,0,0,.18); }
+
+  .day-photo { position:absolute; inset:0; background-size:cover; background-position:center; transition:transform .4s; }
+  .day-cell.has-photo:hover .day-photo { transform:scale(1.09); }
+  .day-overlay { position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,0,0,.38) 0%,transparent 55%); }
+
+  .day-num {
+    position:absolute; top:7px; left:9px;
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.05rem; font-weight:300; font-style:italic;
+    color:#c5b5aa; line-height:1; z-index:2;
+  }
+  .day-cell.has-photo .day-num { color:rgba(255,255,255,.88); }
+  .day-cell.today .day-num { color:var(--coral) !important; font-weight:400; }
+
+  /* ── 追加モーダル ── */
+  .add-modal { position:fixed; inset:0; background:rgba(26,26,46,.6); z-index:800; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; backdrop-filter:blur(6px); }
+  .add-modal.open { opacity:1; pointer-events:all; }
+  .add-box { background:white; border-radius:28px; padding:44px; max-width:420px; width:92%; transform:scale(.92); transition:transform .35s cubic-bezier(.22,1,.36,1); box-shadow:0 40px 100px rgba(0,0,0,.2); display:flex; flex-direction:column; gap:20px; }
+  .add-modal.open .add-box { transform:scale(1); }
+  .add-box h2 { font-family:'Playfair Display',serif; font-size:1.6rem; }
+  .add-box h2 span { color:var(--coral); font-style:italic; }
+
+  .photo-pick { border:2px dashed #e0d5cc; border-radius:16px; padding:28px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; }
+  .photo-pick:hover { border-color:var(--coral); background:rgba(255,107,107,.04); }
+  .photo-pick .pick-icon { font-size:2rem; margin-bottom:8px; }
+  .photo-pick p { color:#aaa; font-size:.88rem; }
+  .photo-pick strong { color:var(--coral); }
+  .photo-pick-preview { width:100%; height:160px; object-fit:cover; border-radius:12px; display:none; }
+  #add-file-input { display:none; }
+
+  .field-label { font-size:.65rem; letter-spacing:3px; text-transform:uppercase; color:#bbb; margin-bottom:6px; }
+  .field-input { width:100%; border:1.5px solid #e8e0d8; border-radius:12px; padding:12px 16px; font-size:.95rem; font-family:'DM Sans',sans-serif; outline:none; color:var(--dark); transition:border-color .2s; background:white; }
+  .field-input:focus { border-color:var(--coral); }
+  .date-time-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .add-submit-btn { background:var(--dark); color:white; border:none; border-radius:100px; padding:14px; font-size:.82rem; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .2s, transform .15s; }
+  .add-submit-btn:hover { background:#2e2e4a; transform:scale(1.02); }
+  .add-cancel-btn { background:none; border:none; color:#bbb; font-size:.8rem; cursor:pointer; text-align:center; letter-spacing:1px; font-family:'DM Sans',sans-serif; transition:color .2s; }
+  .add-cancel-btn:hover { color:#888; }
+
+  /* ── 詳細画面 ── */
+  #detail-screen { position:fixed; inset:0; z-index:500; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .5s; overflow:hidden; }
+  #detail-screen.open { opacity:1; pointer-events:all; }
+  #detail-canvas { position:absolute; inset:0; width:100%; height:100%; filter:blur(50px) brightness(.5) saturate(1.5); transform:scale(1.15); }
+
+  .back-btn { position:absolute; top:28px; left:28px; z-index:10; display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.15); color:white; border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:9px 18px; font-size:.85rem; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); transition:background .2s, transform .15s; }
+  .back-btn:hover { background:rgba(255,255,255,.28); transform:translateX(-3px); }
+
+  .detail-content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; padding:100px 40px 60px; overflow-y:auto; height:100%; gap:28px; }
+  .detail-content::-webkit-scrollbar { width:4px; }
+  .detail-content::-webkit-scrollbar-thumb { background:rgba(255,255,255,.2); border-radius:4px; }
+
+  .detail-img-wrap { animation:floatImg 5s ease-in-out infinite; }
+  @keyframes floatImg { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+  .detail-img { max-width:min(460px,85vw); max-height:52vh; border-radius:24px; object-fit:contain; box-shadow:0 40px 100px rgba(0,0,0,.55); display:block; }
+
+  .detail-datetime { color:rgba(255,255,255,.7); font-family:'Cormorant Garamond',serif; font-size:1rem; font-style:italic; letter-spacing:1.5px; text-align:center; }
+  .detail-datetime .big-time { display:block; font-size:2rem; font-style:normal; color:white; letter-spacing:3px; margin-top:4px; }
+
+  .journal-card { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18); border-radius:24px; padding:32px; width:100%; max-width:540px; backdrop-filter:blur(20px); display:flex; flex-direction:column; gap:16px; }
+  .journal-label { font-size:.65rem; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,.45); }
+  .journal-title-input { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:white; background:transparent; border:none; outline:none; border-bottom:1px solid rgba(255,255,255,.2); padding-bottom:8px; width:100%; }
+  .journal-title-input::placeholder { color:rgba(255,255,255,.28); }
+  .journal-title-input:focus { border-color:rgba(255,255,255,.55); }
+  .journal-textarea { font-family:'Cormorant Garamond',serif; font-size:1.1rem; line-height:1.9; color:rgba(255,255,255,.9); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:16px; resize:none; outline:none; width:100%; min-height:160px; font-style:italic; }
+  .journal-textarea::placeholder { color:rgba(255,255,255,.22); font-style:italic; }
+  .journal-textarea:focus { border-color:rgba(255,255,255,.28); background:rgba(255,255,255,.1); }
+  .journal-save-btn { background:rgba(255,255,255,.18); color:white; border:1px solid rgba(255,255,255,.28); border-radius:100px; padding:10px 26px; font-size:.8rem; letter-spacing:2px; text-transform:uppercase; cursor:pointer; align-self:flex-start; transition:background .2s, transform .15s; }
+  .journal-save-btn:hover { background:rgba(255,255,255,.3); transform:scale(1.03); }
+  .journal-del-btn { background:rgba(255,107,107,.18); color:white; border:1px solid rgba(255,107,107,.35); border-radius:100px; padding:8px 20px; font-size:.75rem; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; align-self:flex-start; transition:background .2s; }
+  .journal-del-btn:hover { background:rgba(255,107,107,.35); }
+
+  /* 削除確認 */
+  .confirm-modal { position:fixed; inset:0; background:rgba(26,26,46,.55); z-index:2000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; backdrop-filter:blur(4px); }
+  .confirm-modal.open { opacity:1; pointer-events:all; }
+  .confirm-box { background:white; border-radius:24px; padding:40px; text-align:center; max-width:320px; width:90%; transform:scale(.9); transition:transform .3s cubic-bezier(.22,1,.36,1); box-shadow:0 30px 80px rgba(0,0,0,.2); }
+  .confirm-modal.open .confirm-box { transform:scale(1); }
+  .confirm-box h3 { font-family:'Playfair Display',serif; font-size:1.4rem; margin-bottom:10px; }
+  .confirm-box p { color:#888; font-size:.9rem; margin-bottom:28px; }
+  .confirm-btns { display:flex; gap:12px; justify-content:center; }
+  .btn { padding:10px 24px; border-radius:100px; border:none; font-size:.85rem; font-weight:500; cursor:pointer; transition:transform .15s; }
+  .btn:hover { transform:scale(1.04); }
+  .btn-cancel { background:#f0f0f0; color:#666; }
+  .btn-delete { background:var(--coral); color:white; }
+
+  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--dark); color:white; padding:12px 24px; border-radius:100px; font-size:.85rem; letter-spacing:1px; opacity:0; transition:opacity .3s, transform .3s; z-index:3000; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  @media(max-width:700px) {
+    .calendar-grid,.weekday-row { padding:0 14px 40px; gap:4px; }
+    .top-bar,.month-nav,.hero { padding-left:20px; padding-right:20px; }
+    .hero-title { font-size:2.8rem; }
+    .hero-title .line2 { padding-left:20px; }
+    .day-num { font-size:.85rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ══ ホーム ══ -->
+<div id="home-screen">
+
+  <!-- ヘッダー -->
+  <div class="top-bar">
+    <div class="logo">my <span>album.</span></div>
+    <button class="add-btn" id="openAddModal">＋ 思い出を追加</button>
+  </div>
+
+  <!-- ヒーロー -->
+  <div class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <h1 class="hero-title">
+      the days<br>
+      <span class="line2">I don't want to forget.</span>
+    </h1>
+    <p class="hero-sub">my precious moments ✦ photo journal</p>
+  </div>
+
+  <!-- ティッカー -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>memories</span><span>moments</span><span>stories</span>
+      <span>life</span><span>love</span><span>travel</span>
+      <span>friends</span><span>joy</span><span>everyday</span>
+      <span>memories</span><span>moments</span><span>stories</span>
+      <span>life</span><span>love</span><span>travel</span>
+      <span>friends</span><span>joy</span><span>everyday</span>
+    </div>
+  </div>
+
+  <!-- 月ナビ -->
+  <div class="month-nav">
+    <button class="nav-arrow" id="prevMonth">←</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button class="nav-arrow" id="nextMonth">→</button>
+  </div>
+
+  <!-- 曜日 -->
+  <div class="weekday-row">
+    <div class="weekday-cell">日</div>
+    <div class="weekday-cell">月</div>
+    <div class="weekday-cell">火</div>
+    <div class="weekday-cell">水</div>
+    <div class="weekday-cell">木</div>
+    <div class="weekday-cell">金</div>
+    <div class="weekday-cell">土</div>
+  </div>
+
+  <!-- カレンダー -->
+  <div class="calendar-grid" id="calendarGrid"></div>
+</div>
+
+<!-- ══ 追加モーダル ══ -->
+<div class="add-modal" id="addModal">
+  <div class="add-box">
+    <h2>思い出を<span>追加</span>する</h2>
+    <div class="photo-pick" id="photoPick">
+      <img class="photo-pick-preview" id="photoPreview" src="" alt="">
+      <div id="photoPickInner">
+        <div class="pick-icon">📷</div>
+        <p>写真を選ぶ<br><strong>クリックして選択</strong></p>
+      </div>
+      <input type="file" id="add-file-input" accept="image/*">
+    </div>
+    <div>
+      <div class="field-label">いつのベストショット？</div>
+      <div class="date-time-row">
+        <input class="field-input" type="date" id="addDate">
+        <input class="field-input" type="time" id="addTime">
+      </div>
+    </div>
+    <div>
+      <div class="field-label">タイトル（任意）</div>
+      <input class="field-input" type="text" id="addTitle" placeholder="例：海で夕焼けを見た日">
+    </div>
+    <button class="add-submit-btn" id="addSubmitBtn">カレンダーに追加 ✦</button>
+    <button class="add-cancel-btn" id="addCancelBtn">キャンセル</button>
+  </div>
+</div>
+
+<!-- ══ 詳細画面 ══ -->
+<div id="detail-screen">
+  <canvas id="detail-canvas"></canvas>
+  <button class="back-btn" id="backBtn">← もどる</button>
+  <div class="detail-content">
+    <div class="detail-img-wrap">
+      <img class="detail-img" id="detailImg" src="" alt="">
+    </div>
+    <div class="detail-datetime">
+      <span id="detailDate"></span>
+      <span class="big-time" id="detailTime"></span>
+    </div>
+    <div class="journal-card">
+      <div class="journal-label">✦ タイトル</div>
+      <input class="journal-title-input" id="journalTitle" placeholder="この瞬間に名前をつけよう...">
+      <div class="journal-label">✦ 思い出メモ</div>
+      <textarea class="journal-textarea" id="journalText" placeholder="あの日のこと、覚えてる？&#10;どんな気持ちだったか、何を感じたか&#10;ゆっくり書いてみてね..."></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="journal-save-btn" id="journalSaveBtn">保存する ✦</button>
+        <button class="journal-del-btn" id="journalDelBtn">🗑 削除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 削除確認 -->
+<div class="confirm-modal" id="confirmModal">
+  <div class="confirm-box">
+    <h3>写真を削除する？</h3>
+    <p>この操作は元に戻せません</p>
+    <div class="confirm-btns">
+      <button class="btn btn-cancel" id="cancelDelete">キャンセル</button>
+      <button class="btn btn-delete" id="confirmDelete">削除する</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// カーソル
+const cursor = document.getElementById('cursor');
+const cursorDot = document.getElementById('cursorDot');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX+'px'; cursor.style.top = e.clientY+'px';
+  cursorDot.style.left = e.clientX+'px'; cursorDot.style.top = e.clientY+'px';
+});
+document.addEventListener('mousedown', ()=>{ cursor.style.width='30px'; cursor.style.height='30px'; });
+document.addEventListener('mouseup',   ()=>{ cursor.style.width='20px'; cursor.style.height='20px'; });
+
+// トースト
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+// IndexedDB
+let db;
+const DB_NAME = 'PhotoAlbumDB6', STORE = 'photos';
+function openDB() {
+  return new Promise((res,rej)=>{
+    const req = indexedDB.open(DB_NAME,1);
+    req.onupgradeneeded = e => {
+      if(!e.target.result.objectStoreNames.contains(STORE))
+        e.target.result.createObjectStore(STORE,{keyPath:'id'});
+    };
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = e => rej(e);
+  });
+}
+const dbOp = (mode,fn) => new Promise((res,rej)=>{
+  const req = fn(db.transaction(STORE,mode).objectStore(STORE));
+  req.onsuccess = e => res(e.target.result);
+  req.onerror   = e => rej(e);
+});
+const getAllPhotos = () => dbOp('readonly',  s=>s.getAll());
+const putPhoto    = p  => dbOp('readwrite', s=>s.put(p));
+const removePhoto = id => dbOp('readwrite', s=>s.delete(id));
+
+// 状態
+let currentYear  = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let allPhotos    = [];
+
+// 日時フォーマット
+function formatDatetime(iso) {
+  if(!iso) return {date:'',time:''};
+  const d = new Date(iso);
+  return {
+    date: d.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'}),
+    time: d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
+  };
+}
+
+// カレンダー描画
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  const monthJa = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('monthLabel').innerHTML = `${currentYear} <span>${monthJa[currentMonth]}</span>`;
+
+  const firstDay    = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+  const today       = new Date();
+
+  // 日付→写真マップ（1日1枚）
+  const photoMap = {};
+  allPhotos.forEach(p => {
+    const d = new Date(p.datetime);
+    if(d.getFullYear()===currentYear && d.getMonth()===currentMonth) {
+      const day = d.getDate();
+      if(!photoMap[day]) photoMap[day] = p;
+    }
+  });
+
+  // 空白
+  for(let i=0; i<firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'day-cell empty';
+    grid.appendChild(el);
+  }
+
+  // 日付セル
+  for(let d=1; d<=daysInMonth; d++) {
+    const cell = document.createElement('div');
+    cell.className = 'day-cell';
+    const isToday = today.getFullYear()===currentYear && today.getMonth()===currentMonth && today.getDate()===d;
+    if(isToday) cell.classList.add('today');
+
+    const photo = photoMap[d];
+    if(photo) {
+      cell.classList.add('has-photo');
+      const bg = document.createElement('div');
+      bg.className = 'day-photo';
+      bg.style.backgroundImage = `url('${photo.dataUrl}')`;
+      cell.appendChild(bg);
+      const ov = document.createElement('div');
+      ov.className = 'day-overlay';
+      cell.appendChild(ov);
+      cell.addEventListener('click', ()=>openDetail(photo));
+    }
+
+    const num = document.createElement('div');
+    num.className = 'day-num';
+    num.textContent = d;
+    cell.appendChild(num);
+    grid.appendChild(cell);
+  }
+}
+
+// 月移動
+document.getElementById('prevMonth').addEventListener('click', ()=>{
+  currentMonth--; if(currentMonth<0){currentMonth=11;currentYear--;} renderCalendar();
+});
+document.getElementById('nextMonth').addEventListener('click', ()=>{
+  currentMonth++; if(currentMonth>11){currentMonth=0;currentYear++;} renderCalendar();
+});
+
+// ══ 追加モーダル ══
+const addModal      = document.getElementById('addModal');
+const addFileInput  = document.getElementById('add-file-input');
+const photoPreview  = document.getElementById('photoPreview');
+const photoPickInner= document.getElementById('photoPickInner');
+let pendingDataUrl  = null;
+
+document.getElementById('openAddModal').addEventListener('click', ()=>{
+  pendingDataUrl = null;
+  photoPreview.style.display='none'; photoPickInner.style.display='';
+  document.getElementById('addDate').value='';
+  document.getElementById('addTime').value='';
+  document.getElementById('addTitle').value='';
+  addFileInput.value='';
+  addModal.classList.add('open');
+});
+document.getElementById('addCancelBtn').addEventListener('click', ()=>addModal.classList.remove('open'));
+addModal.addEventListener('click', e=>{ if(e.target===addModal) addModal.classList.remove('open'); });
+
+document.getElementById('photoPick').addEventListener('click', ()=>addFileInput.click());
+addFileInput.addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    pendingDataUrl = ev.target.result;
+    photoPreview.src = pendingDataUrl;
+    photoPreview.style.display='block'; photoPickInner.style.display='none';
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('addSubmitBtn').addEventListener('click', async ()=>{
+  if(!pendingDataUrl){ showToast('📷 写真を選んでください'); return; }
+  const dateVal = document.getElementById('addDate').value;
+  const timeVal = document.getElementById('addTime').value;
+  if(!dateVal){ showToast('📅 日付を入力してください'); return; }
+  const datetime = new Date(`${dateVal}T${timeVal||'00:00'}`).toISOString();
+  const titleVal = document.getElementById('addTitle').value;
+  const accents  = ['accent-coral','accent-mint','accent-sky','accent-yellow','accent-lavender','accent-pink'];
+  const photo = {
+    id: Date.now()+Math.random(),
+    dataUrl: pendingDataUrl,
+    title: titleVal || `${dateVal}の思い出`,
+    datetime, accent: accents[Math.floor(Math.random()*accents.length)],
+    journalTitle: titleVal||'', journalText:'',
+  };
+  await putPhoto(photo);
+  allPhotos.push(photo);
+  const d = new Date(datetime);
+  currentYear=d.getFullYear(); currentMonth=d.getMonth();
+  renderCalendar();
+  addModal.classList.remove('open');
+  showToast('✦ 思い出をカレンダーに追加しました！');
+});
+
+// ══ 詳細画面 ══
+const homeScreen   = document.getElementById('home-screen');
+const detailScreen = document.getElementById('detail-screen');
+const detailImg    = document.getElementById('detailImg');
+const detailDate   = document.getElementById('detailDate');
+const detailTime   = document.getElementById('detailTime');
+const journalTitle = document.getElementById('journalTitle');
+const journalText  = document.getElementById('journalText');
+let currentPhotoId = null;
+
+function drawBackground(dataUrl) {
+  const canvas = document.getElementById('detail-canvas');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d'), img=new Image();
+  img.onload=()=>ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  img.src=dataUrl;
+}
+
+function openDetail(photo) {
+  currentPhotoId=photo.id;
+  detailImg.src=photo.dataUrl;
+  drawBackground(photo.dataUrl);
+  const {date,time}=formatDatetime(photo.datetime);
+  detailDate.textContent=date; detailTime.textContent=time;
+  journalTitle.value=photo.journalTitle||'';
+  journalText.value=photo.journalText||'';
+  homeScreen.classList.add('hidden');
+  detailScreen.classList.add('open');
+  detailScreen.querySelector('.detail-content').scrollTop=0;
+}
+
+function closeDetail() {
+  detailScreen.classList.remove('open');
+  homeScreen.classList.remove('hidden');
+  currentPhotoId=null;
+}
+
+document.getElementById('backBtn').addEventListener('click', closeDetail);
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ closeDetail(); addModal.classList.remove('open'); confirmModal.classList.remove('open'); }
+});
+
+document.getElementById('journalSaveBtn').addEventListener('click', async ()=>{
+  if(!currentPhotoId) return;
+  const idx=allPhotos.findIndex(p=>p.id===currentPhotoId); if(idx<0) return;
+  allPhotos[idx].journalTitle=journalTitle.value;
+  allPhotos[idx].journalText=journalText.value;
+  if(journalTitle.value) allPhotos[idx].title=journalTitle.value;
+  await putPhoto(allPhotos[idx]);
+  showToast('✦ 思い出を保存しました');
+});
+
+// 削除
+let pendingDeleteId=null;
+const confirmModal=document.getElementById('confirmModal');
+document.getElementById('journalDelBtn').addEventListener('click',()=>{ pendingDeleteId=currentPhotoId; confirmModal.classList.add('open'); });
+document.getElementById('cancelDelete').addEventListener('click',()=>{ confirmModal.classList.remove('open'); pendingDeleteId=null; });
+document.getElementById('confirmDelete').addEventListener('click', async ()=>{
+  if(pendingDeleteId===null) return;
+  await removePhoto(pendingDeleteId);
+  allPhotos=allPhotos.filter(p=>p.id!==pendingDeleteId);
+  renderCalendar();
+  confirmModal.classList.remove('open'); pendingDeleteId=null;
+  closeDetail();
+  showToast('🗑 写真を削除しました');
+});
+
+// 起動
+openDB().then(async database=>{
+  db=database;
+  allPhotos=await getAllPhotos();
+  renderCalendar();
+});
+</script>
+</body>
+</html>
